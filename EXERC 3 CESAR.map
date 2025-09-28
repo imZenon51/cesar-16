@@ -1,0 +1,8 @@
+Símbolo         Valor Decimal   Valor Hexadecimal
+-------         -------------   -----------------
+LOOP                       16                  10
+NEXT_BIT                   28                  1C
+NUM                      1024                 400
+ZERO                     1026                 402
+UM                       1028                 404
+BYTE                     1030                 406
