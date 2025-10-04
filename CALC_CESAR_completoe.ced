@@ -1,0 +1,143 @@
+;-----------------------------------
+; CALCULADORA COM ECO (CESAR16 PURO)
+;-----------------------------------
+; - Entrada: teclado (end 65499), controle em 65498
+; - Saída: LEDs consecutivos (36 posições a partir de 65500)
+; - Operações: soma, subtração, multiplicação e divisão
+;-----------------------------------
+
+        ORG 0
+
+        MOV #65498, R3      ; endereço do controle de teclado
+        MOV #65500, R6      ; endereço inicial dos LEDs
+        CLR (R3)            ; limpa sinal
+
+;-----------------------------------
+; Leitura do primeiro número
+;-----------------------------------
+LEIT_NUM1:
+        TST (R3)
+        BEQ LEIT_NUM1
+        MOV 65499, R0       ; ASCII lido
+        MOV R0, (R6)        ; ecoa no LED
+        INC R6
+        SUB #'0', R0        ; converte ASCII -> valor
+        MOV R0, NUM1
+        CLR (R3)
+
+;-----------------------------------
+; Leitura do operador
+;-----------------------------------
+LEIT_OP:
+        TST (R3)
+        BEQ LEIT_OP
+        MOV 65499, R0
+        MOV R0, (R6)
+        INC R6
+        MOV R0, OPERACAO
+        CLR (R3)
+
+;-----------------------------------
+; Leitura do segundo número
+;-----------------------------------
+LEIT_NUM2:
+        TST (R3)
+        BEQ LEIT_NUM2
+        MOV 65499, R0
+        MOV R0, (R6)
+        INC R6
+        SUB #'0', R0
+        MOV R0, NUM2
+        CLR (R3)
+
+;-----------------------------------
+; Espera pelo '='
+;-----------------------------------
+LEIT_IGUAL:
+        TST (R3)
+        BEQ LEIT_IGUAL
+        MOV 65499, R0
+        MOV R0, (R6)
+        INC R6
+        CMP R0, #'='
+        BNE LEIT_IGUAL
+        CLR (R3)
+
+;-----------------------------------
+; Cálculo
+;-----------------------------------
+        MOV NUM1, R1        ; operando A
+        MOV NUM2, R2        ; operando B
+        MOV OPERACAO, R0    ; operador ASCII
+
+        CMP R0, #'+'
+        BEQ FAZ_SOMA
+        CMP R0, #'-'
+        BEQ FAZ_SUB
+        CMP R0, #'*'
+        BEQ FAZ_MULT
+        CMP R0, #'/'
+        BEQ FAZ_DIV
+        BR FIM              ; operador inválido
+
+FAZ_SOMA:
+        ADD R2, R1
+        BR MOSTRA
+
+FAZ_SUB:
+        SUB R2, R1
+        BR MOSTRA
+
+;-----------------------------------
+; Multiplicação por somas sucessivas
+;-----------------------------------
+FAZ_MULT:
+        CLR R5              ; acumulador resultado
+MULT_LOOP:
+        TST R2
+        BEQ MULT_FIM
+        ADD R1, R5
+        DEC R2
+        BR MULT_LOOP
+MULT_FIM:
+        MOV R5, R1
+        BR MOSTRA
+
+;-----------------------------------
+; Divisão por subtrações sucessivas
+;-----------------------------------
+FAZ_DIV:
+        CLR R5              ; quociente
+DIV_LOOP:
+        CMP R1, R2
+        BLT DIV_FIM
+        SUB R2, R1
+        INC R5
+        BR DIV_LOOP
+DIV_FIM:
+        MOV R5, R1
+        BR MOSTRA
+
+;-----------------------------------
+; Exibe resultado (apenas 1 dígito!)
+;-----------------------------------
+MOSTRA:
+        ADD #'0', R1
+        MOV R1, (R6)
+        INC R6
+        BR FIM
+
+;-----------------------------------
+; Loop final (mantém programa rodando)
+;-----------------------------------
+FIM:
+        BR FIM
+
+;-----------------------------------
+; Variáveis
+;-----------------------------------
+        ORG 1020
+NUM1:       DW 0
+NUM2:       DW 0
+OPERACAO:   DW 0
+
